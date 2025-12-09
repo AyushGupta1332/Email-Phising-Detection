@@ -13,9 +13,10 @@ A comprehensive email phishing detection system that uses multiple AI/ML models 
 - [Project Architecture](#project-architecture)
 - [Setup Instructions](#setup-instructions)
   - [1. Prerequisites](#1-prerequisites)
-  - [2. Install Dependencies](#2-install-dependencies)
-  - [3. API Keys Configuration](#3-api-keys-configuration)
-  - [4. Running the Application](#4-running-the-application)
+  - [2. Download Required Files](#2-download-required-files)
+  - [3. Install Dependencies](#3-install-dependencies)
+  - [4. API Keys Configuration](#4-api-keys-configuration)
+  - [5. Running the Application](#5-running-the-application)
 - [Usage](#usage)
 - [Model Details](#model-details)
 
@@ -99,7 +100,7 @@ pip install -r requirements.txt
 python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 ```
 
-### 3. API Keys Configuration
+### 4. API Keys Configuration
 
 You need to set up API keys for Gmail and Outlook integration. Follow these steps:
 
@@ -143,7 +144,7 @@ setx OUTLOOK_REDIRECT_URI "http://localhost:5000/callback_outlook"
 
 > ⚠️ **Important:** After running `setx` commands, close and reopen your terminal/VS Code for changes to take effect.
 
-### 4. Running the Application
+### 5. Running the Application
 
 ```bash
 # Navigate to project directory
@@ -186,7 +187,7 @@ The application will start at `http://127.0.0.1:5000`
 
 ## License
 
-This project is developed for educational purposes as part of a Personal Expertise.
+This project is developed for educational purposes as part of My Personal Project.
 
 ---
 
