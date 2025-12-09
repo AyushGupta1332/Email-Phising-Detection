@@ -73,7 +73,19 @@ PHISHING DETECTION MAIN/
 - pip (Python package manager)
 - Git
 
-### 2. Install Dependencies
+### 2. Download Required Files
+
+> ⚠️ **Important:** The ML models and YARA rules are not included in this repository due to their large size. You must download them separately.
+
+📥 **[Download Required Project Files from Google Drive](https://drive.google.com/file/d/1mFBAFdXUWLhbsOluyEVSzfkO58_Gg9HF/view?usp=sharing)**
+
+After downloading, extract the files and place them in the project root directory. The download includes:
+- `image_model.h5` - CNN image classification model
+- `roberta_lora_phishing_detector.pt` - Email body RoBERTa model
+- `Data Classification File and Model/` - Document classifier model
+- `awesome-yara/` - YARA malware detection rules
+
+### 3. Install Dependencies
 
 ```bash
 # Clone the repository
@@ -174,7 +186,7 @@ The application will start at `http://127.0.0.1:5000`
 
 ## License
 
-This project is developed for educational purposes as part of a Personal Expertise.
+This project is developed for educational purposes as part of a Year Project.
 
 ---
 
@@ -182,3 +194,6 @@ This project is developed for educational purposes as part of a Personal Experti
 
 - Ayush Gupta
 
+---
+
+**Made with ❤️ for email security**
