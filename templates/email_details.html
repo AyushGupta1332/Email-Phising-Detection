@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Details</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Base styles */
+        :root {
+            --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-tertiary: #868e96;
+            --shadow: rgba(0, 0, 0, 0.15);
+            --btn-primary: #007bff;
+            --btn-hover: #0056b3;
+            --accent-color: #28a745;
+            --input-border: #ced4da;
+            --transition: all 0.3s ease;
+            --safe-color: #2ecc71;
+            --phishing-color: #e74c3c;
+            --feedback-color: #e67e22;
+            --sensitive-color: #e74c3c;
+            --nonsensitive-color: #27ae60;
+        }
+
+        /* Dark theme */
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            --bg-card: rgba(52, 58, 64, 0.8);
+            --text-primary: #f8f9fa;
+            --text-secondary: #e9ecef;
+            --text-tertiary: #adb5bd;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --btn-primary: #1a73e8;
+            --btn-hover: #1557b0;
+            --input-border: #6c757d;
+            --safe-color: #10b981;
+            --phishing-color: #ef4444;
+            --feedback-color: #f59e0b;
+            --sensitive-color: #ef4444;
+            --nonsensitive-color: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: var(--transition);
+        }
+
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: var(--bg-card);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(45deg, var(--btn-primary), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .back-btn {
+            background: var(--btn-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .back-btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .back-btn:before {
+            content: "←";
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        .email-details {
+            padding: 15px 0;
+        }
+
+        .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .category-tag {
+            padding: 8px 15px;
+            border-radius: 25px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .confidence-score {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            margin-left: 10px;
+        }
+
+        .email-body {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--btn-primary);
+        }
+
+        .email-content > div {
+            color: var(--text-primary) !important;
+        }
+
+        .email-content {
+            padding: 0;
+            background: transparent;
+            border-left: none;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .email-content * {
+            max-width: 100% !important;
+            box-shadow: none !important;
+            outline: none !important;
+            border: none !important;
+        }
+
+        .email-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .email-content table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .email-content td, .email-content th {
+            padding: 8px;
+            border: none !important;
+        }
+
+        .email-content a {
+            color: var(--btn-primary);
+            text-decoration: none;
+        }
+
+        .email-content a:hover {
+            text-decoration: underline;
+        }
+
+        .email-content .gmail_quote {
+            display: none;
+        }
+
+        .email-content .gmail_signature {
+            font-style: italic;
+            color: var(--text-tertiary);
+        }
+
+        .email-content .gmail_attr {
+            display: none;
+        }
+
+        .email-content hr {
+            border: none;
+            border-top: 1px solid var(--input-border);
+            margin: 20px 0;
+        }
+
+        .email-content .google-logo {
+            color: var(--btn-primary) !important;
+            font-weight: bold;
+        }
+
+        .email-content .security-alert {
+            background: rgba(248, 249, 250, 0.5);
+            border-left: 4px solid var(--btn-primary);
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .email-content button {
+            background: var(--btn-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .email-content button:hover {
+            background: var(--btn-hover);
+        }
+
+        .urls-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--btn-primary);
+        }
+
+        .url-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .url-item {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--input-border);
+            width: calc(50% - 8px);
+            transition: var(--transition);
+        }
+
+        .url-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .url-link {
+            color: var(--btn-primary);
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+        }
+
+        .url-status {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .url-status.safe {
+            background: var(--safe-color);
+        }
+
+        .url-status.phishing {
+            background: var(--phishing-color);
+        }
+
+        .no-urls {
+            color: var(--text-tertiary);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        .chart-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid #8e44ad;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .attachments {
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .attachment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .attachment-item {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--input-border);
+            width: calc(50% - 8px);
+            transition: var(--transition);
+        }
+
+        .attachment-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .attachment-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            border: 1px solid var(--input-border);
+            transition: var(--transition);
+        }
+
+        .attachment-link:hover {
+            background: var(--input-border);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .attachment-link:before {
+            content: "📎";
+            margin-right: 6px;
+        }
+
+        .file-format {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            margin-left: 5px;
+        }
+
+        .sensitivity-tag {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .sensitive {
+            background: var(--sensitive-color);
+        }
+
+        .non-sensitive {
+            background: var(--nonsensitive-color);
+        }
+
+        .feedback-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--feedback-color);
+        }
+
+        .feedback-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .feedback-form label {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .feedback-form select,
+        .feedback-form textarea {
+            padding: 10px;
+            border: 2px solid var(--input-border);
+            border-radius: 5px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background: var(--bg-card);
+            cursor: pointer;
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .feedback-form select:focus,
+        .feedback-form textarea:focus {
+            outline: none;
+            border-color: var(--btn-primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .feedback-form button {
+            padding: 10px 20px;
+            background: var(--feedback-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .feedback-form button:hover {
+            background: #d35400;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .feedback-reason {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(230, 126, 34, 0.1);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .feedback-reason {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .flash-message.success {
+            background: var(--safe-color);
+            color: white;
+        }
+
+        .flash-message.error {
+            background: var(--phishing-color);
+            color: white;
+        }
+
+        .phishing {
+            background: var(--phishing-color);
+        }
+
+        .safe {
+            background: var(--safe-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--input-border);
+            padding-bottom: 15px;
+        }
+
+        .warning-icon {
+            margin-right: 8px;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .close-button:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px 0;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--input-border);
+            padding-top: 15px;
+            text-align: right;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--input-border);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background: var(--input-border);
+        }
+
+        .no-attachments {
+            color: var(--text-tertiary);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        .attachment-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .attachment-icon {
+            font-size: 1.2em;
+        }
+
+        .attachment-loader {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-tertiary);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--input-border);
+            border-top-color: var(--btn-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .theme-toggle-wrapper {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 5px 10px;
+            border-radius: 40px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .theme-toggle {
+            height: 40px;
+            width: 70px;
+            position: relative;
+            display: inline-block;
+            background: var(--bg-card);
+            border-radius: 40px;
+            box-shadow: inset 0 2px 5px var(--shadow);
+        }
+
+        .theme-toggle input {
+            display: none;
+        }
+
+        .slider {
+            background: #6c757d;
+            border-radius: 40px;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+        }
+
+        .slider:before {
+            background: var(--bg-card);
+            border-radius: 50%;
+            bottom: 4px;
+            content: "";
+            height: 32px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 32px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        input:checked + .slider {
+            background: var(--btn-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .slider:before {
+            content: "☀️";
+            text-align: center;
+            line-height: 32px;
+            font-size: 16px;
+        }
+
+        input:checked + .slider:before {
+            content: "🌙";
+        }
+
+        .theme-toggle-label {
+            margin-right: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .email-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .back-btn {
+                align-self: flex-start;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .email-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .category-tag {
+                align-self: flex-start;
+            }
+
+            .feedback-form {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .theme-toggle-wrapper {
+                top: 10px;
+                right: 10px;
+            }
+
+            .attachment-item {
+                width: 100%;
+            }
+
+            .url-item {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .email-content {
+                padding: 0;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .attachment-list {
+                flex-direction: column;
+            }
+
+            .url-list {
+                flex-direction: column;
+            }
+
+            .feedback-form select,
+            .feedback-form textarea,
+            .feedback-form button {
+                width: 100%;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .theme-toggle {
+                height: 36px;
+                width: 60px;
+            }
+
+            .slider:before {
+                height: 28px;
+                width: 28px;
+                line-height: 28px;
+                font-size: 14px;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle-wrapper">
+        <span class="theme-toggle-label">Toggle Theme</span>
+        <label class="theme-toggle" for="theme-toggle-checkbox">
+            <input type="checkbox" id="theme-toggle-checkbox">
+            <div class="slider"></div>
+        </label>
+    </div>
+
+    <div class="container">
+        <h1>Email Details</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="email-header">
+            <a href="{{ url_for('dashboard') if email['provider'] == 'gmail' else url_for('outlook_dashboard') }}" class="back-btn">Back to Dashboard</a>
+            <h2>{{ email['subject'] }}</h2>
+        </div>
+        <div class="email-details">
+            <div class="email-meta">
+                <p><strong>From:</strong> {{ email['sender'] }}</p>
+                <div>
+                    <span class="category-tag {{ email['category'].lower() }}">{{ email['category'] }}</span>
+                    <span class="confidence-score">Confidence: {{ '%.2f' | format(email['confidence_score']) }}%</span>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>Classification Factors</h3>
+                <div class="chart-container">
+                    <canvas id="factorsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="email-body">
+                <h3>Body</h3>
+                <div class="email-content">
+                    {% if modified_body %}
+                        <div style="font-family: 'Inter', sans-serif; color: var(--text-primary); line-height: 1.5; max-width: 800px; margin: 0 auto;">
+                            {{ modified_body | urlize | safe }}
+                        </div>
+                    {% else %}
+                        <p>No body content available for this email.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="urls-section">
+                <h3>URLs</h3>
+                {% if email['urls'] %}
+                    <div class="url-list">
+                        {% for url in email['urls'] %}
+                        <div class="url-item">
+                            <p><strong>URL:</strong> <a href="{{ url['url'] }}" class="url-link" target="_blank">{{ url['url'] }}</a></p>
+                            <p><strong>Domain:</strong> {{ url['domain'] }}</p>
+                            <span class="url-status {{ 'safe' if url['status'] == 'Safe' else 'phishing' }}">{{ url['status'] }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="no-urls">No URLs found in this email.</p>
+                {% endif %}
+            </div>
+
+            <div class="attachments">
+                <h3>Attachments</h3>
+                {% if attachments %}
+                    <div class="attachment-list">
+                        {% for att in attachments %}
+                        <div class="attachment-item">
+                            <div class="attachment-main">
+                                <a href="#" class="attachment-link" data-attachment-id="{{ att['id'] }}">
+                                    <span class="attachment-icon">📎</span>
+                                    {{ att['filename'] }}
+                                </a>
+                                <span class="file-format">({{ (att['filename'] | split('.') | last | upper) if '.' in att['filename'] else 'UNKNOWN' }})</span>
+                                <div class="attachment-loader" id="loader-{{ att['id'] }}" style="display: none;">
+                                    <div class="spinner"></div>
+                                    <span>Scanning...</span>
+                                </div>
+                            </div>
+                            <div class="sensitivity-wrapper">
+                                {% if att['sensitivity'] is defined and att['sensitivity'] in ['sensitive', 'non-sensitive'] %}
+                                    <span class="sensitivity-tag {{ att['sensitivity'] }}">
+                                        {{ att['sensitivity'] | capitalize }}
+                                    </span>
+                                {% else %}
+                                    <span class="sensitivity-tag non-sensitive">Non-Sensitive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="no-attachments">No attachments found.</p>
+                {% endif %}
+            </div>
+
+            <div class="feedback-section">
+                <h3>Provide Feedback</h3>
+                <form class="feedback-form" method="POST" action="{{ url_for('submit_feedback', email_id=email['id']) }}">
+                    <label for="correct_category">Correct Category:</label>
+                    <select name="correct_category" id="correct_category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Safe" {% if email['category'] == 'Safe' %}selected{% endif %}>Safe</option>
+                        <option value="Phishing" {% if email['category'] == 'Phishing' %}selected{% endif %}>Phishing</option>
+                    </select>
+                    <label for="feedback_reason">Reason for Feedback:</label>
+                    <textarea name="feedback_reason" id="feedback_reason" placeholder="Explain why you chose this category (e.g., 'This domain is trusted')">{{ email['feedback_reason'] if email['feedback_reason'] else '' }}</textarea>
+                    <button type="submit">Submit Feedback</button>
+                </form>
+                <div class="feedback-reason">
+                    <strong>Previous Feedback Reason:</strong>
+                    {% if email['has_feedback'] == 1 and email['feedback_reason'] %}
+                        {{ email['feedback_reason'] }}
+                    {% else %}
+                        No previous feedback provided.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cautionModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <span class="warning-icon">⚠️</span>
+                    Caution: Potential Malware Detected
+                </h3>
+                <button class="close-button" onclick="closeModal()" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="cautionMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggleCheckbox.checked = true;
+        }
+
+        themeToggleCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+            if (window.factorsChart) {
+                updateChartColors();
+            }
+        });
+
+        const elements = [
+            document.querySelector('.email-header'),
+            document.querySelector('.email-meta'),
+            document.querySelector('.chart-section'),
+            document.querySelector('.email-body'),
+            document.querySelector('.urls-section'),
+            document.querySelector('.attachments'),
+            document.querySelector('.feedback-section')
+        ];
+        elements.forEach((element, index) => {
+            if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, 100 * index);
+            }
+        });
+
+        const feedbackForm = document.querySelector('.feedback-form');
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Stop the default form submission
+
+                const selectedCategory = document.querySelector('#correct_category').value;
+                if (!selectedCategory) {
+                    alert('Please select a category before submitting.');
+                    return;
+                }
+                
+                // Use fetch to submit the form data in the background
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(new FormData(this)),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // If the submission is successful, simply reload the page
+                        // The backend has already updated the data, so a reload will show the changes
+                        window.location.reload();
+                    } else {
+                        // If the server returns an error, alert the user
+                        alert('Error submitting feedback. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting feedback:', error);
+                    alert('A network error occurred. Please try again.');
+                });
+            });
+        }
+
+        const attachmentLinks = document.querySelectorAll('.attachment-link');
+        attachmentLinks.forEach(link => {
+            link.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const attachmentId = link.getAttribute('data-attachment-id');
+                const loader = document.getElementById(`loader-${attachmentId}`);
+                
+                try {
+                    loader.style.display = 'flex';
+                    const response = await fetch(`/scan_attachment/${attachmentId}`);
+                    const result = await response.json();
+                    
+                    if (result.status === 'safe') {
+                        window.location.href = `/attachment/${attachmentId}`;
+                    } else if (result.status === 'unsafe') {
+                        document.getElementById('cautionMessage').textContent = result.message;
+                        document.getElementById('cautionModal').style.display = 'block';
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    alert('Error scanning attachment. Please try again.');
+                } finally {
+                    loader.style.display = 'none';
+                }
+            });
+        });
+
+        const emailContent = document.querySelector('.email-content');
+        if (emailContent && emailContent.scrollHeight > 300) {
+            emailContent.style.maxHeight = '300px';
+            emailContent.style.overflow = 'hidden';
+            const expandBtn = document.createElement('button');
+            expandBtn.innerText = 'Show More';
+            expandBtn.style.display = 'block';
+            expandBtn.style.margin = '10px auto';
+            expandBtn.style.padding = '5px 15px';
+            expandBtn.style.background = 'var(--bg-card)';
+            expandBtn.style.border = '1px solid var(--input-border)';
+            expandBtn.style.borderRadius = '5px';
+            expandBtn.style.cursor = 'pointer';
+            expandBtn.style.color = 'var(--text-primary)';
+            emailContent.parentNode.insertBefore(expandBtn, emailContent.nextSibling);
+            expandBtn.addEventListener('click', function() {
+                if (emailContent.style.maxHeight === '300px') {
+                    emailContent.style.maxHeight = emailContent.scrollHeight + 'px';
+                    this.innerText = 'Show Less';
+                } else {
+                    emailContent.style.maxHeight = '300px';
+                    this.innerText = 'Show More';
+                }
+            });
+        }
+
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(message => {
+            setTimeout(() => {
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 500);
+            }, 5000);
+        });
+
+        initializeFactorsChart();
+    });
+
+    function initializeFactorsChart() {
+        const factorsFromServer = {{ email.explanation | tojson }};
+        if (!factorsFromServer || factorsFromServer.length === 0) {
+            const chartSection = document.querySelector('.chart-section');
+            if(chartSection) {
+               chartSection.innerHTML = '<h3>Classification Factors</h3><p>No specific risk factors were detected for this email.</p>';
+            }
+            return;
+        }
+
+        const explanationLabels = factorsFromServer.map(factor => factor[0]);
+        const explanationData = factorsFromServer.map(factor => factor[1]);
+
+        const ctx = document.getElementById('factorsChart').getContext('2d');
+        
+        let safeColor = '#2ecc71';
+        let phishingColor = '#e74c3c';
+        if (document.body.getAttribute('data-theme') === 'dark') {
+            safeColor = '#10b981';
+            phishingColor = '#ef4444';
+        }
+        
+        const category = document.querySelector('.category-tag').textContent.trim().toLowerCase();
+        let backgroundColors = explanationLabels.map(() => category === 'safe' ? safeColor : phishingColor);
+
+        window.factorsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: explanationLabels,
+                datasets: [{
+                    label: 'Contribution',
+                    data: explanationData,
+                    backgroundColor: backgroundColors,
+                    borderColor: document.body.getAttribute('data-theme') === 'dark' ? '#343a40' : '#ffffff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.formattedValue;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((context.raw / total) * 100);
+                                return `${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Contribution Weight',
+                            color: document.body.getAttribute('data-theme') === 'dark' ? '#f8f9fa' : '#212529'
+                        },
+                        ticks: {
+                            color: document.body.getAttribute('data-theme') === 'dark' ? '#f8f9fa' : '#212529'
+                        },
+                        grid: {
+                            color: document.body.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: document.body.getAttribute('data-theme') === 'dark' ? '#f8f9fa' : '#212529'
+                        },
+                        grid: {
+                            color: document.body.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChartColors() {
+        if (!window.factorsChart) return;
+        const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+        const category = document.querySelector('.category-tag').textContent.trim().toLowerCase();
+        
+        window.factorsChart.data.datasets[0].backgroundColor = 
+            category === 'safe' ? 
+            isDarkMode ? '#10b981' : '#2ecc71' : 
+            isDarkMode ? '#ef4444' : '#e74c3c';
+        
+        window.factorsChart.options.scales.x.title.color = 
+            isDarkMode ? '#f8f9fa' : '#212529';
+        
+        window.factorsChart.options.scales.x.ticks.color = 
+            isDarkMode ? '#f8f9fa' : '#212529';
+        
+        window.factorsChart.options.scales.y.ticks.color = 
+            isDarkMode ? '#f8f9fa' : '#212529';
+        
+        window.factorsChart.update();
+    }
+
+    function closeModal() {
+        document.getElementById('cautionModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('cautionModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

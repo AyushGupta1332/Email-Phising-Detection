@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Dashboard</title>
+    <style>
+        /* Base styles */
+        :root {
+            --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-tertiary: #868e96;
+            --shadow: rgba(0, 0, 0, 0.15);
+            --btn-primary: #007bff;
+            --btn-hover: #0056b3;
+            --accent-color: #28a745;
+            --input-border: #ced4da;
+            --transition: all 0.3s ease;
+        }
+
+        /* Dark mode */
+        body.dark-mode {
+            --bg-primary: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            --bg-card: rgba(52, 58, 64, 0.8);
+            --text-primary: #f8f9fa;
+            --text-secondary: #e9ecef;
+            --text-tertiary: #adb5bd;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --btn-primary: #1a73e8;
+            --btn-hover: #1557b0;
+            --input-border: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: var(--transition);
+        }
+
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(45deg, var(--btn-primary), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Filter Container */
+        .filter-container {
+            position: sticky;
+            top: 20px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-right: 10px;
+            color: var(--text-primary);
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--input-border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--btn-primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .fetch-info {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--btn-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px var(--shadow);
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        /* Flash Message */
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: rgba(227, 242, 253, 0.9);
+            color: #0d47a1;
+            backdrop-filter: blur(5px);
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        body.dark-mode .flash-message {
+            background: rgba(13, 71, 161, 0.9);
+            color: #e3f2fd;
+        }
+
+        .flash-message.show {
+            display: block;
+        }
+
+        /* Email List */
+        .email-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .email-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            border-left: 4px solid #2ecc71; /* Default to Safe color */
+            backdrop-filter: blur(10px);
+        }
+
+        .email-card.phishing {
+            border-left-color: #e74c3c;
+        }
+
+        .email-card.needs-review {
+            border-left-color: #f1c40f;
+        }
+
+        .email-card.has-feedback {
+            border-right: 4px solid #e67e22;
+        }
+
+        .email-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow);
+        }
+
+        .email-header {
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.5);
+            border-bottom: 1px solid rgba(234, 234, 234, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .email-header {
+            background: rgba(45, 45, 45, 0.5);
+            border-bottom-color: rgba(68, 68, 68, 0.5);
+        }
+
+        .email-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-content {
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .email-content p {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .email-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .confidence-score {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        .email-card .btn {
+            margin: 15px;
+            align-self: flex-start;
+        }
+
+        /* Category colors */
+        .phishing .category-badge {
+            background-color: #e74c3c;
+        }
+
+        .safe .category-badge {
+            background-color: #2ecc71;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .email-card {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            vertical-align: middle;
+        }
+
+        .dark-mode-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #6c757d;
+            border-radius: 34px;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "☀️";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background: var(--bg-card);
+            transition: .4s;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 26px;
+            font-size: 14px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        input:checked + .slider {
+            background-color: var(--btn-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            content: "🌙";
+        }
+
+        .dark-mode-label {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: 500;
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .email-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+
+            .filter-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .dark-mode-toggle {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .email-list {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="filter-container">
+            <a href="{{ url_for('index') }}" class="btn">Back to Main Page</a>
+            {% if request.endpoint == 'sent_dashboard' %}
+                <a href="{{ url_for('dashboard') }}" class="btn">Back to Inbox</a>
+            {% else %}
+                <a href="{{ url_for('sent_dashboard') }}" class="btn">Sent Items</a>
+            {% endif %}
+            
+            <div style="display: flex; align-items: center;">
+                <label class="filter-label">Filter by:</label>
+                <select class="filter-select" id="category-filter">
+                    <option value="all">All Emails</option>
+                    <option value="Phishing">Phishing</option>
+                    <option value="Safe">Safe</option>
+                    <option value="needs-review">Needs Review</option>
+                </select>
+            </div>
+
+            <span class="fetch-info">
+                Fetching {{ session.get('num_emails', 10) }} emails
+            </span>
+            
+            <div style="display: flex; align-items: center;">
+                <label class="dark-mode-toggle">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="dark-mode-label">Dark Mode</span>
+            </div>
+        </div>
+
+        <div class="flash-message"></div>
+        <h1>{% if request.endpoint == 'sent_dashboard' %}Sent Email Dashboard{% else %}Inbox Email Dashboard{% endif %}</h1>
+        <div class="email-list" id="email-list">
+            {% if emails %}
+                {% for email in emails %}
+                    <div class="email-card {{ email.category.lower() }} {% if email.needs_review == 1 %}needs-review{% endif %} {% if email.has_feedback == 1 %}has-feedback{% endif %}" 
+                         data-category="{{ email.category }}" 
+                         data-needs-review="{{ email.needs_review }}">
+                        <div class="email-header">
+                            <span class="category-badge">{{ email.category }}</span>
+                            <span class="confidence-score">Confidence: {{ '%.2f' | format(email.confidence_score) }}%</span>
+                        </div>
+                        <div class="email-content">
+                            <h3>{{ email.subject }}</h3>
+                            <p><strong>From:</strong> {{ email.sender }}</p>
+                            <p class="email-preview">{{ clean_preview_text(email.body) | safe }}</p>
+                        </div>
+                        <a href="{{ url_for('email_details', email_id=email.id) }}" 
+                           class="btn">View Details</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; margin-top: 30px; color: var(--text-tertiary); font-size: 1.2rem;">No emails found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved dark mode preference
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Dark mode toggle functionality
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+            
+            // Add staggered animation to email cards
+            const emailCards = document.querySelectorAll('.email-card');
+            emailCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Check for query parameters to show flash messages
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            if (message) {
+                const flashMessage = document.querySelector('.flash-message');
+                flashMessage.textContent = decodeURIComponent(message);
+                flashMessage.classList.add('show');
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    flashMessage.classList.remove('show');
+                }, 5000);
+            }
+            
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                btn.addEventListener('mouseout', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Filter functionality
+            const filterSelect = document.getElementById('category-filter');
+            const emailList = document.getElementById('email-list');
+            
+            filterSelect.addEventListener('change', function() {
+                const selectedFilter = this.value;
+                const emails = emailList.querySelectorAll('.email-card');
+                
+                emails.forEach(email => {
+                    const emailCategory = email.getAttribute('data-category');
+                    const needsReview = email.getAttribute('data-needs-review') === '1';
+                    
+                    if (selectedFilter === 'all') {
+                        email.style.display = 'block';
+                    } else if (selectedFilter === 'needs-review') {
+                        email.style.display = needsReview ? 'block' : 'none';
+                    } else {
+                        email.style.display = (emailCategory === selectedFilter) ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

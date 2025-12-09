@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Classifier</title>
+    <style>
+        /* Base styles */
+        :root {
+            --bg-primary: linear-gradient(135deg, #e9ecef 0%, #ced4da 100%);
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-tertiary: #868e96;
+            --shadow: rgba(0, 0, 0, 0.15);
+            --btn-primary: #007bff;
+            --btn-hover: #0056b3;
+            --btn-outlook: #0078D4;
+            --btn-outlook-hover: #005ba1;
+            --input-border: #ced4da;
+            --card-hover: rgba(255, 255, 255, 0.95);
+            --transition: all 0.3s ease;
+            --accent-color: #28a745;
+        }
+
+        /* Dark theme */
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            --bg-card: #343a40;
+            --text-primary: #f8f9fa;
+            --text-secondary: #e9ecef;
+            --text-tertiary: #adb5bd;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --btn-primary: #1a73e8;
+            --btn-hover: #1557b0;
+            --btn-outlook: #005a9e;
+            --btn-outlook-hover: #0078D4;
+            --input-border: #6c757d;
+            --card-hover: rgba(52, 58, 64, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: var(--transition);
+            scroll-behavior: smooth;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            box-shadow: 0 2px 5px var(--shadow);
+            z-index: 1000;
+            padding: 15px 0;
+            width: 100%;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--btn-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--btn-primary), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .typewriter {
+            font-size: 1.5rem;
+            color: var(--text-tertiary);
+            margin-top: 20px;
+            overflow: hidden;
+            border-right: 0.15em solid var(--btn-primary);
+            white-space: nowrap;
+            animation: typing 4s steps(40, end) infinite, blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--btn-primary); }
+        }
+
+        /* Auth Container */
+        .auth-container {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px var(--shadow);
+            text-align: center;
+            margin: 30px 0;
+            width: 100%;
+            max-width: 600px;
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .email-count-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--btn-primary);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+        }
+
+        input[type="number"]:invalid {
+            border-color: #dc3545;
+        }
+
+        .form-error {
+            color: #dc3545;
+            font-size: 0.9rem;
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        input:invalid + .form-error {
+            opacity: 1;
+        }
+
+        .auth-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--btn-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .outlook-btn {
+            background: var(--btn-outlook);
+        }
+
+        .outlook-btn:hover {
+            background: var(--btn-outlook-hover);
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px var(--shadow);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--btn-primary), var(--accent-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin: 15px 0;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-tertiary);
+            line-height: 1.6;
+        }
+
+        /* Testimonials Section */
+        .testimonials {
+            margin: 60px 0;
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .testimonials h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: var(--text-primary);
+        }
+
+        .testimonial-card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px var(--shadow);
+            margin: 20px 0;
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .testimonial-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-card .author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(45deg, var(--btn-primary), var(--accent-color));
+            color: white;
+            padding: 60px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 60px 0;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .cta .auth-btn {
+            display: inline-block;
+            width: auto;
+            padding: 16px 32px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin: 40px 0;
+            color: var(--text-tertiary);
+            font-size: 0.95rem;
+        }
+
+        /* Theme Switch */
+        .theme-switch-wrapper {
+            position: fixed;
+            top: 70px; 
+            right: 1px;
+            z-index: 1000; 
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 5px 10px;
+            border-radius: 40px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .theme-switch {
+            height: 40px;
+            width: 70px;
+            position: relative;
+            display: inline-block;
+            background: var(--bg-card);
+            border-radius: 40px;
+            box-shadow: inset 0 2px 5px var(--shadow);
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            background: #6c757d;
+            border-radius: 40px;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+        }
+
+        .slider:before {
+            background: var(--bg-card);
+            border-radius: 50%;
+            bottom: 4px;
+            content: "";
+            height: 32px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 32px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        input:checked + .slider {
+            background: var(--btn-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .slider:before {
+            content: "☀️";
+            text-align: center;
+            line-height: 32px;
+            font-size: 16px;
+        }
+
+        input:checked + .slider:before {
+            content: "🌙";
+        }
+
+        .theme-switch-label {
+            margin-right: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .auth-container {
+                padding: 25px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .theme-switch-wrapper {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .auth-btn {
+                padding: 12px;
+            }
+
+            .cta h2 {
+                font-size: 1.8rem;
+            }
+
+            .theme-switch {
+                height: 36px;
+                width: 60px;
+            }
+
+            .slider:before {
+                height: 28px;
+                width: 28px;
+                line-height: 28px;
+                font-size: 14px;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+
+            .theme-switch-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Switch -->
+    <div class="theme-switch-wrapper">
+        <span class="theme-switch-label">Toggle Theme</span>
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider"></div>
+        </label>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">Email Classifier</div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#features">Features</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#cta">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero" id="home">
+            <h1>Secure Your Inbox with Email Classifier</h1>
+            <p>Harness the power of advanced machine learning to intelligently organize and protect your emails from phishing and malicious content.</p>
+            <div class="typewriter">Real-time protection, powered by AI.</div>
+        </div>
+
+        <!-- Auth Container -->
+        <div class="auth-container">
+            <form action="{{ url_for('set_email_count') }}" method="post" class="email-count-form">
+                <div class="form-group">
+                    <label for="num_emails">Number of Emails to Fetch:</label>
+                    <input type="number" id="num_emails" name="num_emails" min="1" value="{{ session.get('num_emails', 10) }}" required>
+                    <span class="form-error">Please enter a valid number of emails.</span>
+                </div>
+                <button type="submit" class="auth-btn">Set Email Count</button>
+            </form>
+
+            <div class="auth-buttons">
+                <a href="{{ url_for('authorize_gmail') }}" class="auth-btn">Connect with Gmail</a>
+                <a href="{{ url_for('authorize_outlook') }}" class="auth-btn outlook-btn">Connect with Outlook</a>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features" id="features">
+            <div class="feature-card">
+                <h3>Advanced AI Classification</h3>
+                <p>Our LSTM model, enhanced with RLHF, delivers precise email classification with confidence scores and continuous learning capabilities.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Real-Time Protection</h3>
+                <p>Instantly classify emails with webhooks and gain insights into model decisions through SHAP-based explanations.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Smart Feature Extraction</h3>
+                <p>Identify urgency indicators, URL counts, and other critical features to enhance classification accuracy.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Secure Attachment Scanning</h3>
+                <p>Protect against malware with YARA-based attachment scanning and sensitivity classification for images and documents.</p>
+            </div>
+        </div>
+
+        <!-- Testimonials Section -->
+        <div class="testimonials" id="testimonials">
+            <h2>What Our Users Say</h2>
+            <div class="testimonial-card">
+                <p>"Email Classifier has transformed how I manage my inbox. The AI-powered phishing detection is spot-on, saving me hours of manual sorting!"</p>
+                <div class="author">Sarah Johnson, IT Manager</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"The real-time classification and detailed explanations give me confidence in my email security. A must-have tool for any professional."</p>
+                <div class="author">Michael Chen, Cybersecurity Analyst</div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta" id="cta">
+            <h2>Start Protecting Your Inbox Today</h2>
+            <p>Join thousands of users who trust Email Classifier to keep their communications secure and organized.</p>
+            <a href="{{ url_for('authorize_gmail') }}" class="auth-btn">Get Started Now</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2025 Email Classifier. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle
+            const toggleSwitch = document.querySelector('#checkbox');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                toggleSwitch.checked = true;
+            }
+
+            toggleSwitch.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // Smooth scroll for nav links
+            document.querySelectorAll('.nav-links a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Button animations
+            const authBtns = document.querySelectorAll('.auth-btn');
+            authBtns.forEach(btn => {
+                btn.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                btn.addEventListener('mouseout', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+            });
+
+            // Form validation
+            const emailInput = document.querySelector('#num_emails');
+            emailInput.addEventListener('input', function() {
+                if (this.value < 1) {
+                    this.setCustomValidity('Please enter a number of emails greater than 0.');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
