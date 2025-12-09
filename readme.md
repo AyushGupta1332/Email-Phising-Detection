@@ -174,7 +174,7 @@ The application will start at `http://127.0.0.1:5000`
 
 ## License
 
-This project is developed for educational purposes as part of a Year Project.
+This project is developed for educational purposes as part of a Personal Expertise.
 
 ---
 
@@ -182,6 +182,3 @@ This project is developed for educational purposes as part of a Year Project.
 
 - Ayush Gupta
 
----
-
-**Made with ❤️ for email security**
