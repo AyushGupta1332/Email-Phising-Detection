@@ -78,7 +78,7 @@ PHISHING DETECTION MAIN/
 
 > ⚠️ **Important:** The ML models and YARA rules are not included in this repository due to their large size. You must download them separately.
 
-📥 **[Download Required Project Files from Google Drive](https://drive.google.com/file/d/1mFBAFdXUWLhbsOluyEVSzfkO58_Gg9HF/view?usp=sharing)**
+📥 **[Download Required Project Files from Google Drive](https://drive.google.com/file/d/1xSV0mw6QRrco0Q39Tj1BKUCUTUi1_MnL/view?usp=sharing)**
 
 After downloading, extract the files and place them in the project root directory. The download includes:
 - `image_model.h5` - CNN image classification model
